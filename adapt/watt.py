@@ -357,6 +357,13 @@ class WATT:
         elif reduction == "mean":
             return loss.mean()
 
+    """
+    weight_average 用于对多个模型的参数进行平均，是常见的模型融合策略
+    
+    @staticmethod 表示这是一个 静态方法，不依赖类的实例 (self)。
+    all_weights 是多个模型的权重（state_dict）组成的列表
+    """
+
     @staticmethod
     def weight_average(all_weights):
         """
@@ -368,10 +375,16 @@ class WATT:
         Returns:
             avg_state_dict: Averaged state dictionary.
         """
+        # 获取权重的数量，比如 3
         K = len(all_weights)
+        # 创建一个新的 OrderedDict 用来保存平均后的参数。
+        # 使用 OrderedDict 是为了保留参数的顺序
         avg_state_dict = OrderedDict()
+        # 遍历第一个模型的所有参数名和对应的值
         for param_name, param in all_weights[0].items():
+            # 对每个模型的同一个参数名（如 'encoder.layer1.weight'）取出来求和，然后除以模型个数，得到平均值
             avg_param = sum(sd[param_name] for sd in all_weights) / K
+            # 将平均后的参数添加进结果字典
             avg_state_dict[param_name] = avg_param
         return avg_state_dict
 
